@@ -281,6 +281,7 @@
 				<section>
 					<h2>Leaflet</h2>
 					<img style='border:none' src='http://leafletjs.com/docs/images/logo.png' width=100%></img>
+					<a href='http://leafletjs.com/'>http://leafletjs.com/</a>
 				</section>
 
 				<section>
@@ -296,15 +297,27 @@
 				</section>
 
 				<section>
+					<h2>Leaflet </h2>
+					<ul>
+							<li><a href='https://github.com/cugos/leaflet-starter/blob/master/data.js'>Data.js</a> contains some vector data</li>
+							<li>In <a href='https://github.com/cugos/leaflet-starter/blob/master/index.html#L18'>index.hmtl</a> include leaflet.js and leaflet.css.</li>
+							<li>Also make sure to have a div with id='map'</li>
+							<li<a href='https://github.com/cugos/leaflet-starter/blob/master/js/site.js#L4'>site.js</a> lets you set the inital location and base layer</li>
+					</ul>
+				</section>
+
+				<section>
 					<h2>Open Layers</h2>
-					<img width="500px" src='http://openlayers.org/assets/theme/img/logo70.png'></img>
+					<img width="300px" src='http://openlayers.org/assets/theme/img/logo70.png'></img>
 					<p>Can be more powerful but can also be more complicated</p>
+					<a href='http://openlayers.org/'>http://openlayers.org/</a>
 				</section>
 
 				<section>
 					<h2>Google maps</h2>
 					<img width="20%" src='https://lh4.ggpht.com/99bsLKJEN2B6T-WI63UYU7FG8mEXOGxbif6Lsgfzs_pIDs_2RxJSiOVaMhMhRmciizk=w300'></img>
 					<p>Pretty straight forward but can be restrictive</p>
+					<a href='https://developers.google.com/maps/?hl=en'>https://developers.google.com/maps/?hl=en</a>
 				</section>
 
 				<section>
@@ -460,7 +473,6 @@
 					</ul>
 				</section>
 
-
 				<section>
 					<h2>CartoDB</h2>
 					<ul>
@@ -469,7 +481,12 @@
 						<li><a href=https://data.cityofchicago.org/Service-Requests/2015PotholeRequests/scju-5kky>Pot Hole data</a></li>
 				</section>
 
-
+				<section>
+					<h2>CartoDB under the hood</h2>
+					<p>We can use the editor on CartoDB to make most maps</p>
+					<p>Under the hood what CartoDB is doing is combining an SQL query to select data with some CartoCSS to style it</p>
+					<p>You can write these directly to create really powerful applications</p>
+				</section>
 
 				<section>
 					<h2>Data</h2>
@@ -481,19 +498,6 @@
 	<pre><code>
 SELECT * FROM buildings where shape_area > 100
 	</pre></code>
-</section>
-
-<section>
-
-<h2>Other resources</h2>
-<ul>
-	<li>CartoDB Map Academy <a href='http://academy.cartodb.com/'>http://academy.cartodb.com/</a></li>
-	<li>CartoDB APIS <a href='http://docs.cartodb.com/cartodb-platform.html'>http://docs.cartodb.com/cartodb-platform.html</a></li>
-	<li>Similar talk in NY <a href='https://gist.github.com/stuartlynn/fd8f6cf5793ced2466ed'>here</a></li>
-	<li>Local data sources <a href='https://docs.google.com/spreadsheets/d/1R7O_FZLNB8VV5eoPDNATb-f0njjUsJwmz22cT_OB3fw/edit#gid=0'>here</a></li>
-	<li>National data sources <a href='https://etherpad.mozilla.org/fed-data'>here</a></li>
-</ul>
-
 </section>
 
 
@@ -534,19 +538,108 @@ polygon-fill: #91003F;
 	</code></pre>
 </section>
 
-
 <section>
-	<h3>Cartodb.js</h3>
-	<h2>Getting it on to your site</h2>
-	<pre><code>
+				<h3>Cartodb.js</h3>
+				<h2>Getting it on to your site</h2>
+				<pre><code>
 <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
 <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
 <div id="map"></div>
 <script>
 window.onload = function() {
-cartodb.createVis('map', 'http://documentation.cartodb.com/api/v2/viz/2b13c956-e7c1-11e2-806b-5404a6a683d5/viz.json');
+	cartodb.createVis('map', 'http://documentation.cartodb.com/api/v2/viz/2b13c956-e7c1-11e2-806b-5404a6a683d5/viz.json');
 }
 </script>
+
+
+
+</code></pre>
+			</section>
+
+			<section>
+				<img src='images/VIZ.png'/>
+			</section>
+			<section>
+				<h2>Interacting with other code</h2>
+				<pre><code>
+// create a layer with 1 sublayer
+cartodb.createLayer(map, {
+user_name: 'mycartodbuser',
+type: 'cartodb',
+sublayers: [{
+	sql: "SELECT * FROM table_name",
+	cartocss: '#table_name {marker-fill: #F0F0F0;}'
+}]
+})
+.addTo(map) // add the layer to our map which already contains 1 sublayer
+.done(function(layer) {
+
+// create and add a new sublayer
+layer.createSubLayer({
+	sql: "SELECT * FROM table_name limit 200",
+	cartocss: '#table_name {marker-fill: #F0F0F0;}'
+});
+
+// change the query for the first layer
+layer.getSubLayer(0).setSQL("SELECT * FROM table_name limit 10");
+});
+				</code></pre>
+			</section>
+
+			<section>
+				<h2>Just the data</h2>
+				<pre><code>
+var sql = new cartodb.SQL({ user: 'cartodb_user' });
+sql.execute("SELECT * FROM table_name WHERE id > {{id}}", { id: 3 })
+.done(function(data) {
+	console.log(data.rows);
+})
+.error(function(errors) {
+	// errors contains a list of errors
+	console.log("errors:" + errors);
+})
+				</pre></code>
+
+				<pre><code>
+gem 'cartodb-rb-client'
+				</code></pre>
+
+			</section>
+			<section>
+				<h3>Stories</h3>
+				<h2>Odyssey.js</h2>
+				<img src='images/odyssey.png'/>
+			</section>
+
+
+
+			<section>
+				<iframe width='100%' height=520 frameborder='0' src='http://seeread.info/experiments/santiago/'  allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen></iframe>
+			</section>
+
+			<section>
+				<img src='http://i.imgur.com/i0c3bLL.gif'/>
+			</section>
+
+			<section>
+				<img src='images/oJS.png'/>
+			</section>
+
+
+<section>
+
+<h2>Other resources</h2>
+<ul>
+	<li>CartoDB Map Academy <a href='http://academy.cartodb.com/'>http://academy.cartodb.com/</a></li>
+	<li>CartoDB APIS <a href='http://docs.cartodb.com/cartodb-platform.html'>http://docs.cartodb.com/cartodb-platform.html</a></li>
+	<li>Similar talk in NY <a href='https://gist.github.com/stuartlynn/fd8f6cf5793ced2466ed'>here</a></li>
+	<li>Local data sources <a href='https://docs.google.com/spreadsheets/d/1R7O_FZLNB8VV5eoPDNATb-f0njjUsJwmz22cT_OB3fw/edit#gid=0'>here</a></li>
+	<li>National data sources <a href='https://etherpad.mozilla.org/fed-data'>here</a></li>
+</ul>
+
+</section>
+
+
 
 
 
